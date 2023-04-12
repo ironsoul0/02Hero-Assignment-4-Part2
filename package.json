@@ -16,6 +16,7 @@
     "next": "12.2.0",
     "react": "18.1.0",
     "react-dom": "18.1.0",
+    "react-toastify": "^9.1.2",
     "wagmi": "^0.12.9"
   },
   "devDependencies": {

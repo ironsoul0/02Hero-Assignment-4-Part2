@@ -1,11 +1,12 @@
 import clsx from "clsx";
-import { Spinner } from "components";
+import { Navigation, Spinner } from "components";
 import { config } from "config";
-import { ConnectKitButton } from "connectkit";
 import { utils } from "ethers";
 import { useIsMounted } from "hooks";
 import type { NextPage } from "next";
-import Head from "next/head";
+import Link from "next/link";
+import { useEffect } from "react";
+import { toast } from "react-toastify";
 import {
   useAccount,
   useContractRead,
@@ -14,7 +15,7 @@ import {
   useWaitForTransaction,
 } from "wagmi";
 
-const MINT_PRICE_ETH = "0.0";
+const MINT_PRICE_ETH = "0.0001";
 
 const Home: NextPage = () => {
   const { isConnected, address } = useAccount();
@@ -22,12 +23,12 @@ const Home: NextPage = () => {
 
   const { data, isLoading } = useContractRead({
     address: config.nftAddress,
-    abi: config.abi,
+    abi: config.nftAbi,
     functionName: "totalSupply",
   });
   const { config: writeConfig } = usePrepareContractWrite({
     address: config.nftAddress,
-    abi: config.abi,
+    abi: config.nftAbi,
     functionName: "safeMint",
     args: [address || "0x"],
     enabled: isConnected,
@@ -41,72 +42,77 @@ const Home: NextPage = () => {
       hash: mintData?.hash,
     });
 
-  const nftId = data && data.toNumber();
+  const nftId = data && data.toNumber() + 1;
+
+  useEffect(() => {
+    if (isMintSuccess) {
+      toast("Successfully minted your NFT!", { type: "success" });
+    }
+  }, [isMintSuccess]);
 
   if (!isMounted) return null;
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <Head>
-        <title>NFT Marketplace</title>
-        <meta name="description" content="NFT Marketplace" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-      <div className="max-w-2xl px-3 py-5 mx-auto">
-        <div className="flex justify-between">
-          <p className="font-bold">NFT Marketplace</p>
-          <ConnectKitButton />
-        </div>
-        {isLoading ? <Spinner className="w-7 h-7" /> : null}
-        {nftId ? (
-          nftId < config.maxSupply ? (
-            <div>
-              <p>You are about to mint the following NFT: </p>
-              <img
-                src={`${config.ipfsUri}/${nftId}.png`}
-                alt="NFT"
-                className="w-32 mt-3 rounded-md"
-              />
-              <div className="mt-3">
-                <p>
-                  Price: <b>{MINT_PRICE_ETH} ETH</b>
-                </p>
-                <p>
-                  ID: <b>{nftId}</b>
-                </p>
-                {!isMintLoading && !isMintSuccess && (
-                  <button
-                    className={clsx(
-                      "px-4 py-1 mt-1 text-white bg-green-500 rounded-md transition-opacity",
-                      !isConnected && ["bg-gray-500 cursor-not-allowed"],
-                      isConnected && ["hover:opacity-90"]
-                    )}
-                    onClick={() => mintToken?.()}
+    <div className="max-w-3xl px-3 py-5 mx-auto">
+      <Navigation />
+      {isLoading ? <Spinner className="w-7 h-7" /> : null}
+      {nftId ? (
+        nftId < config.maxSupply ? (
+          <div>
+            <p>You are about to mint the following NFT: </p>
+            <img
+              src={`${config.ipfsUri}/${nftId}.png`}
+              alt="NFT"
+              className="mt-3 w-44 rounded-md"
+            />
+            <div className="mt-2">
+              <p>
+                Price: <b>{MINT_PRICE_ETH} ETH</b>
+              </p>
+              <p>
+                ID: <b>{nftId}</b>
+              </p>
+              {!isMintLoading && !isMintSuccess && (
+                <button
+                  className={clsx(
+                    "px-4 py-1 mt-1 text-white bg-green-500 rounded-md transition-opacity",
+                    !isConnected && ["bg-gray-500 cursor-not-allowed"],
+                    isConnected && ["hover:opacity-90"]
+                  )}
+                  onClick={() => mintToken?.()}
+                >
+                  {isConnected ? "Mint NFT" : "Connect Wallet"}
+                </button>
+              )}
+              {isMintLoading && <Spinner className="w-5 mt-1" />}
+              {isMintSuccess && (
+                <div>
+                  Successfully minted{" "}
+                  <a
+                    target="_blank"
+                    href={`${config.etherscanUri}/${mintData?.hash}`}
+                    rel="noreferrer"
+                    className="text-blue-500 underline"
                   >
-                    {isConnected ? "Mint" : "Connect Wallet"}
-                  </button>
-                )}
-                {isMintLoading && <Spinner className="w-5 mt-1" />}
-                {isMintSuccess && (
-                  <div>
-                    Successfully minted{" "}
-                    <a
-                      target="_blank"
-                      href={`${config.etherscanUri}/${mintData?.hash}`}
-                      rel="noreferrer"
-                      className="text-blue-500 underline"
-                    >
-                      your NFT!
-                    </a>
-                  </div>
-                )}
-              </div>
+                    your NFT!
+                  </a>
+                  <p>
+                    Please visit your{" "}
+                    <Link href="/gallery">
+                      <a className="text-blue-500 underline">
+                        personal gallery
+                      </a>
+                    </Link>{" "}
+                    to stake it.
+                  </p>
+                </div>
+              )}
             </div>
-          ) : (
-            <p>Out of stock</p>
-          )
-        ) : null}
-      </div>
+          </div>
+        ) : (
+          <p>Out of stock</p>
+        )
+      ) : null}
     </div>
   );
 };

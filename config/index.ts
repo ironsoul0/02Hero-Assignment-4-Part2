@@ -1,25 +1,15 @@
+import { nftAbi, tokenAbi } from "./abi";
+
 export const config = {
-  nftAddress: "0x95eab98e2b37867e86372361d9996c0edbd5d076" as `0x${string}`,
+  nftAddress: "0xcfDf6bc7f5Bca0274aE80fA852c89a1b671a1a89" as `0x${string}`,
+  tokenAddress: "0x954c0CFe9e02045B1F91159f54176Ab658521Fd9" as `0x${string}`,
   infuraId: "f40be16d787e47168253bf632e6a7bcd",
   ipfsUri:
-    "https://ipfs.io/ipfs/QmZmsHnadyws9is5KApM1ovqLE5g31oVMgTT714yd1FkWj",
+    "https://ipfs.io/ipfs/QmS9KWozgMie7SZMgPbyins2Un3ihMzbaB1egdj8vdgfQD",
   etherscanUri: "https://testnet.bscscan.com/tx",
-  abi: [
-    {
-      name: "totalSupply",
-      inputs: [],
-      outputs: [{ name: "", type: "uint256" }],
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      name: "safeMint",
-      inputs: [{ name: "_to", type: "address" }],
-      outputs: [],
-      stateMutability: "payable",
-      type: "function",
-    },
-  ] as const,
-  appName: "NFT Marketplace",
-  maxSupply: 5,
+  nftAbi,
+  tokenAbi,
+  appName: "NFT Snaking",
+  maxSupply: 100,
+  tokenSymbol: "SNK",
 };
